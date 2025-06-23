@@ -13,10 +13,18 @@ use App\Http\Controllers\DetectionlogsController;
 |
 */
 
-// Route::get('/', function () {
-//     return view('logs.index');
-// });
+Route::get('/', function () {
+    return view('auth.login');
+});
 
 
-Route::get('/', [DetectionlogsController::class, 'index']);
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DetectionlogsController::class, 'index']);
+});
+
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 

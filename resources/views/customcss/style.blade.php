@@ -11,7 +11,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             margin: 20px auto;
-            max-width: 1900px;
+            max-width: 1450px;
         }
 
         .header-section {

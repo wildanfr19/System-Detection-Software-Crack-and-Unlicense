@@ -1,14 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Detection Crack Application</title>
-    <link href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    @extends('layouts.app')
+    @section('content')
     @include('customcss.style')
-</head>
-<body>
     <div class="main-container">
         <!-- Header Section -->
         <div class="header-section">
@@ -81,14 +74,14 @@
                     <table class="table custom-table">
                         <thead>
                             <tr>
-                                <th><i class="fas fa-hashtag me-2"></i>No</th>
-                                <th><i class="fas fa-desktop me-2"></i>PC Name</th>
-                                <th><i class="fas fa-user me-2"></i>User</th>
-                                <th><i class="fas fa-bug me-2"></i>Unlicense Application</th>
-                                <th><i class="fas fa-file me-2"></i> Location Drive</th>
-                                <th><i class="fas fa-network-wired me-2"></i>IP Address</th>
-                                <th><i class="fas fa-ethernet me-2"></i>MAC Address</th>
-                                <th><i class="fas fa-clock me-2"></i>Detection Time</th>
+                                <th class="text-center"><i class="fas fa-hashtag me-2"></i>No</th>
+                                <th class="text-center"><i class="fas fa-desktop me-2"></i>PC Name</th>
+                                <th class="text-center"><i class="fas fa-user me-2"></i>User</th>
+                                <th class="text-center"><i class="fas fa-bug me-2"></i>Unlicense Application</th>
+                                <th class="text-center"><i class="fas fa-file me-2"></i> Location Drive</th>
+                                <th class="text-center"><i class="fas fa-network-wired me-2"></i>IP Address</th>
+                                <th class="text-center"><i class="fas fa-ethernet me-2"></i>MAC Address</th>
+                                <th class="text-center"><i class="fas fa-clock me-2"></i>Detection Time</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -206,7 +199,6 @@
         @endif
     </div>
 
-    <script src="{{ asset('assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script>
         // Search functionality
         document.getElementById('searchInput').addEventListener('keyup', function() {
@@ -235,5 +227,7 @@
             // location.reload();
         }, 30000);
     </script>
-</body>
-</html>
+
+    @endsection
+{{-- </body>
+</html> --}}
