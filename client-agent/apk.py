@@ -6,9 +6,11 @@ from getmac import get_mac_address
 from datetime import datetime
 import os
 import string
+import ctypes
+
 
 # ============================
-API_URL = "http://192.168.1.5:8000/api/report-crack"
+API_URL = "http://192.168.1.90:8000/api/report-crack"
 SUSPICIOUS_KEYWORDS = ["crack","portable"]
 #  "patch", "keygen", "activator", "kuyhaa", "serial"
 # ============================
@@ -23,17 +25,42 @@ def get_installed_apps():
             print("Failed to fetch application list:", e)
     return apps
 
-def get_all_drives():
-    return [f"{d}:\\" for d in string.ascii_uppercase if os.path.exists(f"{d}:\\")]
+# def get_all_drives():
+#     # return [f"{d}:\\" for d in string.ascii_uppercase if os.path.exists(f"{d}:\\")]
+#  drives = []
+#     for letter in string.ascii_uppercase:
+#         drive = f"{letter}:\\"
+#         drive_type = ctypes.windll.kernel32.GetDriveTypeW(drive)
+#         if drive_type == 3:  
+#             drives.append(drive)
+#     return drives
+def get_all_local_fixed_drives():
+    drives = []
+    for letter in string.ascii_uppercase:
+        drive = f"{letter}:\\"
+        drive_type = ctypes.windll.kernel32.GetDriveTypeW(drive)
+        if drive_type == 3:  # 3 = Fixed drive (HDD/SSD internal)
+            drives.append(drive)
+    return drives
 
 def scan_drives_for_suspicious_files():
     results = []
-    for drive in get_all_drives():
+    for drive in get_all_local_fixed_drives():
         for root, dirs, files in os.walk(drive, topdown=True):
             for name in files + dirs:
                 if any(keyword in name.lower() for keyword in SUSPICIOUS_KEYWORDS):
                     results.append(os.path.join(root, name))
     return results
+
+def scan_drives_for_suspicious_files():
+    results = []
+    for drive in get_all_local_fixed_drives():
+        for root, dirs, files in os.walk(drive, topdown=True):
+            for name in files + dirs:
+                if any(keyword in name.lower() for keyword in SUSPICIOUS_KEYWORDS):
+                    results.append(os.path.join(root, name))
+    return results
+    
 
 def send_log(source, app_name, path="N/A"):
     try:

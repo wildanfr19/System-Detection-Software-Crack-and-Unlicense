@@ -1,233 +1,200 @@
-
-    @extends('layouts.app')
-    @section('content')
-    @include('customcss.style')
-    <div class="main-container">
-        <!-- Header Section -->
-        <div class="header-section">
-            <h1 class="header-title">
-                <i class="fas fa-shield-alt me-3"></i>
-                Dashboard Detection Crack Application Monitoring PT Indonesia Thai Summit Auto
-            </h1>
-            <p class="header-subtitle">
-                Crack & Unlicensed Software Application Detection System
-            </p>
+@extends('layouts.app')
+@section('content')
+@include('customcss.style')
+<div class="main-container">
+    <!-- Simple Stats Section -->
+    <div class="stats-section">
+        <div class="stats-title-bar">
+            <h2 class="page-title">Crack Detection Monitoring</h2>
+            <p class="company-name">PT Indonesia Thai Summit Auto</p>
         </div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-icon danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ $logs->total() ?? 0 }}</div>
+                    <div class="stat-label">Total Detected</div>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon warning">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ $logs->unique('pc_name')->count() ?? 0 }}</div>
+                    <div class="stat-label">PC Affected</div>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon info">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ $logs->unique('user_name')->count() ?? 0 }}</div>
+                    <div class="stat-label">Users</div>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon success">
+                    <i class="fas fa-apps"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ $logs->unique('app_name')->count() ?? 0 }}</div>
+                    <div class="stat-label">App Types</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <!-- Stats Section -->
-        <div class="stats-section">
-            <div class="row">
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-icon text-danger">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="stat-number text-danger">{{ $logs->total() ?? 0 }}</div>
-                        <div class="stat-label">Detected Total</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-icon text-warning">
-                            <i class="fas fa-desktop"></i>
-                        </div>
-                        <div class="stat-number text-warning">{{ $logs->unique('pc_name')->count() ?? 0 }}</div>
-                        <div class="stat-label">PC Detected</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-icon text-info">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-number text-info">{{ $logs->unique('user_name')->count() ?? 0 }}</div>
-                        <div class="stat-label">Users Engage</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="stat-card">
-                        <div class="stat-icon text-success">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <div class="stat-number text-success">{{ $logs->unique('app_name')->count() ?? 0 }}</div>
-                        <div class="stat-label">Application Type</div>
-                    </div>
+    <!-- Enhanced Table Section -->
+    <div class="table-section">
+        <div class="table-header">
+            <h3 class="table-title">Detection Log</h3>
+            <div class="table-actions">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search..." id="searchInput">
+                    <i class="fas fa-search search-icon"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Table Section -->
-        <div class="table-container">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i class="fas fa-list-alt me-2"></i>
-                    Recent Detection Log
-                </h3>
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" placeholder="Cari data..." id="searchInput">
-                </div>
-            </div>
-
-            @if($logs->count() > 0)
-                <div class="table-responsive">
-                    <table class="table custom-table">
-                        <thead>
+        @if($logs->count() > 0)
+            <div class="table-wrapper">
+                <table class="data-table table-bordered">
+                    <thead>
+                        <tr style="background-color: black">
+                            <th class="text-center">No</th>
+                            <th class="text-center">PC Name</th>
+                            <th class="text-center">User</th>
+                            <th class="text-center">IP Address</th>
+                            <th class="text-center">MAC Address</th>
+                            <th class="text-center">Detection Time</th>
+                            <th class="text-center">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($logs as $index => $log)
                             <tr>
-                                <th class="text-center"><i class="fas fa-hashtag me-2"></i>No</th>
-                                <th class="text-center"><i class="fas fa-desktop me-2"></i>PC Name</th>
-                                <th class="text-center"><i class="fas fa-user me-2"></i>User</th>
-                                <th class="text-center"><i class="fas fa-bug me-2"></i>Unlicense Application</th>
-                                <th class="text-center"><i class="fas fa-file me-2"></i> Location Drive</th>
-                                <th class="text-center"><i class="fas fa-network-wired me-2"></i>IP Address</th>
-                                <th class="text-center"><i class="fas fa-ethernet me-2"></i>MAC Address</th>
-                                <th class="text-center"><i class="fas fa-clock me-2"></i>Detection Time</th>
+                                <td class="text-center">
+                                    <span class="row-number">{{ $index + $logs->firstItem() }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="pc-info">
+                                        <i class="fas fa-desktop pc-icon"></i>
+                                        <span class="text-center">{{ $log->pc_name }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="user-info">
+                                        <i class="fas fa-user user-icon"></i>
+                                        <span class="text-center">{{ $log->user_name }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="ip-address">{{ $log->ip_address }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="mac-address">{{ $log->mac_address }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="time-info">
+                                        <i class="fas fa-clock time-icon"></i>
+                                        <span>{{ \Carbon\Carbon::parse($log->detected_at)->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                </td>
+                                 <td class="text-center">
+                                    <button class="btn btn-primary">Detail Detected</button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($logs as $index => $log)
-                                <tr>
-                                    <td class="text-center">
-                                        <span class="badge bg-secondary">{{ $index + $logs->firstItem() }}</span>
-                                    </td>
-                                    <td class="pc-name">
-                                        <i class="fas fa-computer me-2 text-primary"></i>
-                                        {{ $log->pc_name }}
-                                    </td>
-                                    <td class="user-name">
-                                        <i class="fas fa-user-circle me-2"></i>
-                                        {{ $log->user_name }}
-                                    </td>
-                                    <td>
-                                        <span class="app-name">
-                                            <i class="fas fa-exclamation-circle me-2"></i>
-                                            {{ $log->app_name }}
-                                        </span>
-                                    </td>
-                                     <td>
-                                        <span class="lcation">
-                                            <i class="fas fa-exclamation-circle me-2"></i>
-                                            {{ $log->path }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="ip-address">
-                                            <i class="fas fa-globe me-2 text-info"></i>
-                                            {{ $log->ip_address }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="mac-address">
-                                            <i class="fas fa-ethernet me-2 text-success"></i>
-                                            {{ $log->mac_address }}
-                                        </span>
-                                    </td>
-                                    <td class="detection-time">
-                                        <i class="fas fa-calendar-alt me-2"></i>
-                                        {{ \Carbon\Carbon::parse($log->detected_at)->format('d/m/Y H:i:s') }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="alert alert-info text-center py-5">
-                    <i class="fas fa-info-circle fa-3x mb-3"></i>
-                    <h4>No Data Available</h4>
-                    <p class="mb-0">There are no detected cracked applications recorded in the system.</p>
-                </div>
-            @endif
-        </div>
-
-        <!-- Custom Pagination -->
-        @if($logs->hasPages())
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    <i class="fas fa-info-circle"></i>
-                    Displaying {{ $logs->firstItem() }} until {{ $logs->lastItem() }}
-                    from {{ $logs->total() }} total data
-                </div>
-
-                <nav aria-label="Page navigation">
-                    <ul class="custom-pagination">
-                        {{-- Previous Page Link --}}
-                        @if ($logs->onFirstPage())
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-chevron-left"></i>
-                                </span>
-                            </li>
-                        @else
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $logs->previousPageUrl() }}" rel="prev">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
-                            </li>
-                        @endif
-
-                        {{-- Pagination Elements --}}
-                        @foreach ($logs->getUrlRange(1, $logs->lastPage()) as $page => $url)
-                            @if ($page == $logs->currentPage())
-                                <li class="page-item active">
-                                    <span class="page-link">{{ $page }}</span>
-                                </li>
-                            @else
-                                <li class="page-item">
-                                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
-                                </li>
-                            @endif
                         @endforeach
-
-                        {{-- Next Page Link --}}
-                        @if ($logs->hasMorePages())
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $logs->nextPageUrl() }}" rel="next">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </li>
-                        @else
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-chevron-right"></i>
-                                </span>
-                            </li>
-                        @endif
-                    </ul>
-                </nav>
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="no-data">
+                <i class="fas fa-inbox"></i>
+                <h4>No Data Available</h4>
+                <p>There are no detected applications in the system.</p>
             </div>
         @endif
     </div>
 
-    <script>
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const tableRows = document.querySelectorAll('.custom-table tbody tr');
+    <!-- Simple Pagination -->
+    @if($logs->hasPages())
+        <div class="pagination-section">
+            <div class="pagination-info">
+                Showing {{ $logs->firstItem() }} to {{ $logs->lastItem() }} of {{ $logs->total() }} entries
+            </div>
+            
+            <div class="pagination-controls">
+                @if ($logs->onFirstPage())
+                    <button class="page-btn disabled">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                @else
+                    <a href="{{ $logs->previousPageUrl() }}" class="page-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                @endif
 
-            tableRows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            });
+                @foreach ($logs->getUrlRange(1, $logs->lastPage()) as $page => $url)
+                    @if ($page == $logs->currentPage())
+                        <button class="page-btn active">{{ $page }}</button>
+                    @else
+                        <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                @if ($logs->hasMorePages())
+                    <a href="{{ $logs->nextPageUrl() }}" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                @else
+                    <button class="page-btn disabled">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                @endif
+            </div>
+        </div>
+    @endif
+</div>
+
+<script>
+    // Enhanced search functionality
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('.data-table tbody tr');
+
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+                row.classList.remove('hidden');
+            } else {
+                row.style.display = 'none';
+                row.classList.add('hidden');
+            }
         });
+    });
 
-        // Add smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
+    // Smooth scrolling for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
                     behavior: 'smooth'
                 });
-            });
+            }
         });
+    });
+</script>
 
-        // Auto-refresh functionality (optional)
-        setInterval(function() {
-            // Uncomment the line below if you want auto-refresh every 30 seconds
-            // location.reload();
-        }, 30000);
-    </script>
-
-    @endsection
-{{-- </body>
-</html> --}}
+@endsection
