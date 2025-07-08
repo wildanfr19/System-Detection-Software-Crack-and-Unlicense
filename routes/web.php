@@ -21,6 +21,9 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DetectionlogsController::class, 'index']);
+    Route::get('/detectionlog/{param}/showdetail', [DetectionlogsController::class, 'showDetail'])->name('detectionlogs.showdetail');
+    Route::get('/detectionlogs/live-data', [DetectionlogsController::class, 'getLiveLogs'])->name('detectionlogs.livedata');
+    Route::get('/export-logs', [DetectionlogsController::class, 'export'])->name('detectionlogs.export');
 });
 
 

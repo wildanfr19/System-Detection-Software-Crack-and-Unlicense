@@ -7,7 +7,7 @@
     }
 
     .main-container {
-        max-width: 100%;
+        max-width: 95%;
         margin: 0 auto;
         background: white;
         border-radius: 8px;
@@ -20,6 +20,7 @@
         padding: 30px;
         background: white;
         border-bottom: 1px solid #e5e7eb;
+        max-width: 100%;
     }
 
     .stats-title-bar {
@@ -422,6 +423,45 @@
             font-size: 11px;
         }
     }
+
+    #log-detail-table td,
+    #log-detail-table th {
+        word-break: break-word;
+        vertical-align: top;
+    }
+    #log-detail-table thead th {
+        background-color: #2d3c51;
+        color: white;
+    }
+
+    #log-detail-table td:nth-child(4),
+    #log-detail-table th:nth-child(4){
+        max-width: 300px;
+    }
+
+    .dataTables_wrapper .dataTables_scrollBody{
+        overflow-x: auto !important; 
+    }
+    #log-detail-table_wrapper .dataTables_filter {
+      margin-bottom: 10px;
+    }
+
+    #log-detail-table_wrapper .dataTables_filter input {
+        margin-left: 0.5rem; /* Biar search input tidak nempel dengan "Search:" */
+    }
+
+    #log-detail-table_wrapper table.dataTable {
+       margin-top: 1rem;
+    }
+    #logDetailModal .modal-xl {
+        max-width: 95%; /* Membuat modal hampir selebar layar */
+        width: 2300px; /* Anda bisa menyesuaikan lebar ini */
+    }
+    @media (max-width: 1500px) {
+        #logDetailModal .modal-xl {
+            width: 95%;
+        }
+}
 </style>
  {{-- <style>
         body {

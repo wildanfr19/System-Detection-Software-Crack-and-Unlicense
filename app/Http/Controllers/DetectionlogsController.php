@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\DetectionLog;
+use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LogExport;
 class DetectionlogsController extends Controller
 {
     public function store(Request $request)
@@ -25,8 +28,6 @@ class DetectionlogsController extends Controller
     }
     public function index()
     {
-        //   $logs = DetectionLog::orderBy('detected_at', 'desc')->paginate(20);
-        //   return view('logs.index', compact('logs'));
         $logs = DetectionLog::selectRaw('
                     pc_name,
                     MAX(detected_at) as latest_detected_at,
@@ -39,5 +40,34 @@ class DetectionlogsController extends Controller
             ->paginate(20);
         // dd($logs);
         return view('logs.index', compact('logs'));
+    }
+
+    public function showDetail(Request $request, $params)
+    {
+        if ($request->ajax()) {
+            $data = DetectionLog::query()->where('pc_name', $params)->get();
+            return DataTables::of($data)->make(true);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        $filename = 'detection_logs_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new LogExport, $filename);
+    }
+
+    public function getLiveLogs(Request $request)
+    {
+        $logs = DetectionLog::selectRaw('
+                    pc_name,
+                    MAX(detected_at) as latest_detected_at,
+                    MAX(user_name) as user_name,
+                    MAX(ip_address) as ip_address,
+                    MAX(mac_address) as mac_address
+                ')
+            ->groupBy('pc_name')
+            ->orderBy('latest_detected_at', 'desc')->get();
+        return response()->json($logs);
     }
 }
