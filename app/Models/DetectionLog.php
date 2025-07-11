@@ -9,14 +9,18 @@ class DetectionLog extends Model
 {
     use HasFactory;
     protected $fillable = [
-    'pc_name',
-    'user_name',
-    'app_name',
-    'detected_at',
-    'ip_address',
-    'mac_address',
-    'path',
-    'source'
-];
+        'pc_name',
+        'user_name',
+        'app_name',
+        'detected_at',
+        'ip_address',
+        'mac_address',
+        'path',
+        'source',
+        'department_id',
+        'ownership',
+        'company',
+        'type_software'
+    ];
 
 }

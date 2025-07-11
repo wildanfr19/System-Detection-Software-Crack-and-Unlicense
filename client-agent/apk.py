@@ -46,8 +46,9 @@ def get_all_local_fixed_drives():
 
 def scan_drives_for_suspicious_files():
     results = []
-    safe_extensions = ['.pdf','.docx', '.xlsx', '.txt','.php','.conf','.py','.pyc'] 
-    skip_keywords = ["windows","windows portable","windowsapps","windows defender","windowsportabledevices"]
+    safe_extensions = ['.pdf','.docx', '.xlsx', '.txt','.php','.conf','.py','.pyc','.php'] 
+    skip_keywords = ["windows","windows portable","windowsapps","windows defender",
+    "windowsportabledevices","laragon","microsoft visual"]
 
     for drive in get_all_local_fixed_drives():
         for root, dirs, files in os.walk(drive, topdown=True):

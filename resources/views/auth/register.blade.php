@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header" style="background: linear-gradient(45deg, #dc3545, #fd7e14) !important; color:white">{{ __('Register') }}</div>
+                <div class="card-header" style="background: linear-gradient(45deg, #3c8dbc, #3c8dbc) !important; color:white">{{ __('Register') }}</div>
 
                 <div class="card-body">
                     <form method="POST" action="{{ route('register') }}">

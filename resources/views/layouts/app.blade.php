@@ -37,7 +37,7 @@
 
         .navbar-custom .nav-link:hover,
         .navbar-custom .dropdown-toggle:hover {
-            color: #ffe5b4 !important;
+            color: #bcdef1 !important;
         }
 
         .navbar-custom .dropdown-menu {
@@ -47,12 +47,12 @@
         }
 
         .navbar-custom .dropdown-item {
-            color: #dc3545;
+            color: #352325;
             font-weight: 500;
         }
 
         .navbar-custom .dropdown-item:hover {
-            background: #fd7e14;
+            background: #3c8dbc;
             color: #fff;
         }
     </style>
