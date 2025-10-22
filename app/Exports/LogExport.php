@@ -18,10 +18,19 @@ use Illuminate\Support\Collection;
 class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths, WithTitle, WithCustomStartCell
 {
     /**
+     * Cache koleksi agar tidak query ulang saat styling.
+     */
+    private ?Collection $cached = null;
+
+    /**
      * @return \Illuminate\Support\Collection
      */
     public function collection()
     {
+        if ($this->cached !== null) {
+            return $this->cached;
+        }
+
         $detectionLogs = DetectionLog::select([
             'pc_name',
             'user_name',
@@ -47,8 +56,7 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
             $applications = $logs->pluck('app_name')->unique()->implode(', ');
 
             // Tentukan ownership (asumsi company jika tidak ada user_name yang spesifik)
-            $personalOwnership = !empty($firstLog->user_name) ? '✓' : '';
-            $companyOwnership = empty($firstLog->user_name) ? '✓' : '';
+            // (kolom ownership dihilangkan sesuai permintaan)
 
             // Tentukan department berdasarkan pc_name atau user_name (sesuaikan dengan logic bisnis Anda)
             $department = $this->getDepartmentFromPcName($pcName);
@@ -60,25 +68,24 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
             $unlicenseStatus = $hasDetectedApps ? '✓' : '-';
 
             $exportData->push([
-                $rowNumber,                                    // NO
-                $pcName,                                      // COMPUTER NAME
-                $firstLog->mac_address,                       // MAC ADDRESS
-                'ITSA',                                       // COMPANY (default)
-                $pic,                                         // PIC
-                $department,                                  // DEPARTMENT
-                $personalOwnership,                           // OWNERSHIP - PERSONAL
-                $companyOwnership,                            // OWNERSHIP - COMPANY
-                $applications,                                // SOFTWARE NAME (list of detected apps)
-                $licenseStatus,                                         // LICENCE (default unlicensed)
-                $unlicenseStatus,                                          // UNLICENCE
-                '',                                          // ACTION
-                ''                                           // Signature
+                $rowNumber,                 // A: NO
+                $pcName,                    // B: COMPUTER NAME
+                $firstLog->mac_address,     // C: MAC ADDRESS
+                'ITSA',                     // D: COMPANY (default)
+                $pic,                       // E: PIC
+                $department,                // F: DEPARTMENT
+                $applications,              // G: SOFTWARE NAME
+                $licenseStatus,             // H: LICENCE
+                $unlicenseStatus,           // I: UNLICENCE
+                '',                         // J: ACTION
+                ''                          // K: Signature
             ]);
 
             $rowNumber++;
         }
 
-        return $exportData;
+        // cache result untuk dipakai kembali di styles()
+        return $this->cached = $exportData;
     }
     private function getDepartmentFromPcName($pcName)
     {
@@ -102,19 +109,17 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
     public function columnWidths(): array
     {
         return [
-            'A' => 5,   // NO
-            'B' => 15,  // COMPUTER NAME
-            'C' => 18,  // MAC ADDRESS
-            'D' => 10,  // COMPANY
-            'E' => 12,  // PIC
-            'F' => 15,  // DEPARTMENT
-            'G' => 10,  // PERSONAL
-            'H' => 10,  // COMPANY
-            'I' => 40,  // SOFTWARE NAME
-            'J' => 10,  // LICENCE
-            'K' => 12,  // UNLICENCE
-            'L' => 12,  // ACTION
-            'M' => 12,  // Signature
+            'A' => 5,    // NO
+            'B' => 18,   // COMPUTER NAME
+            'C' => 18,   // MAC ADDRESS
+            'D' => 12,   // COMPANY
+            'E' => 14,   // PIC
+            'F' => 16,   // DEPARTMENT
+            'G' => 42,   // SOFTWARE NAME
+            'H' => 12,   // LICENCE
+            'I' => 12,   // UNLICENCE
+            'J' => 12,   // ACTION
+            'K' => 14,   // Signature
         ];
     }
     public function headings(): array
@@ -126,8 +131,6 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
             'COMPANY',
             'PIC',
             'DEPARTMENT',
-            'PERSONAL',
-            'COMPANY',
             'SOFTWARE NAME',
             'LICENCE',
             'UNLICENCE',
@@ -169,25 +172,10 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
             ],
         ]);
 
-        // Merge cells untuk subheader ownership
-        $sheet->mergeCells('G5:H5');
-        $sheet->setCellValue('G5', 'OWNERSHIP');
-        $sheet->getStyle('G5')->applyFromArray([
-            'font' => ['bold' => true],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER,
-            ],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'color' => ['rgb' => 'D0E0E3'],
-            ],
-        ]);
-
-        // Merge cells untuk subheader computer checking result
-        $sheet->mergeCells('I5:K5');
-        $sheet->setCellValue('I5', 'COMPUTER CHECKING RESULT');
-        $sheet->getStyle('I5')->applyFromArray([
+        // Merge cells untuk subheader computer checking result (2 kolom: H-J)
+        $sheet->mergeCells('H5:J5');
+        $sheet->setCellValue('H5', 'COMPUTER CHECKING RESULT');
+        $sheet->getStyle('H5')->applyFromArray([
             'font' => ['bold' => true],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -200,7 +188,7 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
         ]);
 
         // Style untuk header (baris 6)
-        $sheet->getStyle('A6:M6')->applyFromArray([
+        $sheet->getStyle('A6:K6')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -222,11 +210,11 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
         ]);
 
         // Hitung jumlah baris data
-        $dataRowCount = $this->collection()->count();
+    $dataRowCount = $this->collection()->count();
         $lastRow = 6 + $dataRowCount;
 
         // Style untuk data rows
-        $sheet->getStyle('A7:M' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A7:K' . $lastRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -239,9 +227,8 @@ class LogExport implements FromCollection, WithHeadings, WithStyles, WithColumnW
         ]);
 
         // Style khusus untuk kolom tertentu
-        $sheet->getStyle('A7:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('G7:H' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('J7:K' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle('A7:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle('H7:J' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // Auto-fit row height
         for ($row = 7; $row <= $lastRow; $row++) {

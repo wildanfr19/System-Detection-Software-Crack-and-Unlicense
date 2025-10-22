@@ -1,0 +1,6 @@
+requests
+psutil
+getmac
+plyer
+pyinstaller
+watchdog

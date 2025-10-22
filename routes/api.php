@@ -21,3 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('/report-crack', [DetectionlogsController::class, 'store']);
 Route::get('/logs', [DetectionlogsController::class, 'index']);
+Route::post('/dedupe-check', [App\Http\Controllers\DedupeController::class, 'check']);
