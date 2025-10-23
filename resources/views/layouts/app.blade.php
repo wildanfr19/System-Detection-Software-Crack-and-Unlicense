@@ -21,49 +21,43 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        /* Simple & elegant navbar */
         .navbar-custom {
-            background: linear-gradient(45deg, #3c8dbc, #3c8dbc) !important;
-            color: #fff !important;
-            box-shadow: 0 4px 16px rgba(220, 53, 69, 0.08);
-        }
-
-        .navbar-custom .navbar-brand,
-        .navbar-custom .nav-link,
-        .navbar-custom .dropdown-toggle {
-            color: #fff !important;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.08);
-        }
-
-        .navbar-custom .nav-link:hover,
-        .navbar-custom .dropdown-toggle:hover {
-            color: #bcdef1 !important;
-        }
-
-        .navbar-custom .dropdown-menu {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 16px rgba(220, 53, 69, 0.08);
-        }
-
-        .navbar-custom .dropdown-item {
-            color: #352325;
-            font-weight: 500;
-        }
-
-        .navbar-custom .dropdown-item:hover {
-            background: #3c8dbc;
+            background: linear-gradient(135deg,#0f62a8,#3c8dbc) !important;
             color: #fff;
+            padding-top: 0.35rem;
+            padding-bottom: 0.35rem;
         }
+
+        .navbar-custom .navbar-brand {
+            color: #fff !important;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            display:flex; align-items:center; gap:8px;
+        }
+
+        .brand-accent {
+            width:10px; height:10px; border-radius:3px; background:linear-gradient(135deg,#fff,#fff);
+            box-shadow: 0 2px 6px rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .navbar-custom .nav-link { color:rgba(255,255,255,0.95); font-weight:500; }
+        .navbar-custom .nav-link:hover { color:rgba(255,255,255,0.9); }
+
+        .navbar-custom .dropdown-menu { border-radius:8px; box-shadow:0 8px 24px rgba(15,60,100,0.08); }
+        .navbar-custom .dropdown-item { color:#32414a; }
+        .navbar-custom .dropdown-item:hover { background:#f1f7fc; color:#0f62a8; }
     </style>
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-custom shadow-sm">
+    <nav class="navbar navbar-expand-md navbar-custom navbar-dark shadow-sm">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/home') }}">
-                   <strong>System Detector</strong>
-                </a>
+                     <a class="navbar-brand" href="{{ url('/home') }}">
+                         <span class="brand-accent" aria-hidden="true"></span>
+                         <strong>System Detector</strong>
+                     </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -84,11 +78,11 @@
                                 </li>
                             @endif
 
-                            @if (Route::has('register'))
+                            {{-- @if (Route::has('register'))
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
                                 </li>
-                            @endif
+                            @endif --}}
                         @else
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url('/dashboard') }}">
@@ -97,7 +91,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('detectionlogs.index') }}">
-                                    <i class="fas fa-list me-1"></i> Detection Logs
+                                    <i class="fas fa-list me-1"></i> Logs
                                 </a>
                             </li>
                             <li class="nav-item dropdown">

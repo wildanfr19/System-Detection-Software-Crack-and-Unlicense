@@ -28,6 +28,7 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
         $cleanLogs = DetectionLog::select([
                 'pc_name',
                 'user_name',
+                'app_name',
                 'ip_address',
                 'mac_address',
                 'detected_at',
@@ -43,11 +44,12 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
         $rowNumber = 1;
         foreach ($cleanLogs as $pcName => $rows) {
             $latest = $rows->sortByDesc('detected_at')->first();
+            // dd($latest);
             $department = $this->getDepartmentFromPcName($pcName);
             $pic = $latest->user_name ?: 'N/A';
 
             // Clean PC: tidak ada software terdeteksi → Licence ✓, Unlicence -
-            $applications = '';
+            $applications = $latest->app_name == "" ? '( Clean PC )' : $latest->app_name;
             $licenseStatus = '✓';
             $unlicenseStatus = '-';
 
@@ -55,14 +57,15 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
                 $rowNumber,                 // A: NO
                 $pcName,                    // B: COMPUTER NAME
                 $latest->mac_address,       // C: MAC ADDRESS
-                'ITSA',                     // D: COMPANY
-                $pic,                       // E: PIC
-                $department,                // F: DEPARTMENT
-                $applications,              // G: SOFTWARE NAME (kosong)
-                $licenseStatus,             // H: LICENCE
-                $unlicenseStatus,           // I: UNLICENCE
-                '',                         // J: ACTION
-                ''                          // K: Signature
+                $latest->ip_address,        // D: IP ADDRESS
+                'ITSA',                     // E: COMPANY
+                $pic,                       // F: PIC
+                $department,                // G: DEPARTMENT
+                $applications ,              // H: SOFTWARE NAME (kosong)
+                $licenseStatus,             // I: LICENCE
+                $unlicenseStatus,           // J: UNLICENCE
+                '',                         // K: ACTION
+                ''                          // L: Signature
             ]);
 
             $rowNumber++;
@@ -89,14 +92,15 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
             'A' => 5,
             'B' => 18,
             'C' => 18,
-            'D' => 12,
-            'E' => 14,
-            'F' => 16,
-            'G' => 42,
-            'H' => 12,
+            'D' => 18,
+            'E' => 12,
+            'F' => 14,
+            'G' => 16,
+            'H' => 42,
             'I' => 12,
             'J' => 12,
-            'K' => 14,
+            'K' => 12,
+            'L' => 14,
         ];
     }
 
@@ -105,15 +109,16 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
         return [
             'NO',
             'COMPUTER NAME',
-            'MAC ADDRESS',
-            'COMPANY',
-            'PIC',
-            'DEPARTMENT',
-            'SOFTWARE NAME',
-            'LICENCE',
-            'UNLICENCE',
-            'ACTION',
-            'Signature',
+                'MAC ADDRESS',
+                'IP ADDRESS',
+                'COMPANY',
+                'PIC',
+                'DEPARTMENT',
+                'SOFTWARE NAME',
+                'LICENCE',
+                'UNLICENCE',
+                'ACTION',
+                'Signature',
         ];
     }
 
@@ -141,10 +146,10 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
             'fill' => [ 'fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'E6E6E6'] ],
         ]);
 
-        // Subheader: COMPUTER CHECKING RESULT (kolom H-J)
-        $sheet->mergeCells('H5:J5');
-        $sheet->setCellValue('H5', 'COMPUTER CHECKING RESULT');
-        $sheet->getStyle('H5')->applyFromArray([
+        // Subheader: COMPUTER CHECKING RESULT (kolom I-K)
+        $sheet->mergeCells('I5:K5');
+        $sheet->setCellValue('I5', 'COMPUTER CHECKING RESULT');
+        $sheet->getStyle('I5')->applyFromArray([
             'font' => ['bold' => true],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -154,7 +159,7 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
         ]);
 
         // Header baris 6
-        $sheet->getStyle('A6:K6')->applyFromArray([
+        $sheet->getStyle('A6:L6')->applyFromArray([
             'font' => [ 'bold' => true, 'color' => ['rgb' => 'FFFFFF'] ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -167,13 +172,13 @@ class CleanPcExport implements FromCollection, WithHeadings, WithStyles, WithCol
         $dataRowCount = $this->collection()->count();
         $lastRow = 6 + $dataRowCount;
 
-        $sheet->getStyle('A7:K' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A7:L' . $lastRow)->applyFromArray([
             'borders' => [ 'allBorders' => [ 'borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000'] ] ],
             'alignment' => [ 'vertical' => Alignment::VERTICAL_CENTER ],
         ]);
 
         $sheet->getStyle('A7:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('H7:J' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('I7:K' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         for ($row = 7; $row <= $lastRow; $row++) {
             $sheet->getRowDimension($row)->setRowHeight(-1);
