@@ -13,6 +13,8 @@ import time
 import argparse
 import threading
 import sys
+import base64
+import importlib
 
 # Optional watchdog import: if not available, we'll fall back to polling.
 try:
@@ -59,6 +61,9 @@ _NOTIFY_COUNTS = {}
 
 def _ps_show_balloon(title: str, message: str, timeout: int = 6):
     try:
+        # Build a small PowerShell snippet that loads WinForms and shows a NotifyIcon balloon.
+        # We encode the command as UTF-16LE base64 to avoid any quoting/escaping problems
+        # across PowerShell versions (especially older PowerShell on Win7/10).
         ps_script = (
             "[Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null;"
             "[Reflection.Assembly]::LoadWithPartialName('System.Drawing') | Out-Null;"
@@ -68,23 +73,31 @@ def _ps_show_balloon(title: str, message: str, timeout: int = 6):
             f"$n.ShowBalloonTip({int(timeout*1000)}, \"{title}\", \"{message}\", [System.Windows.Forms.ToolTipIcon]::None);"
             f"Start-Sleep -Milliseconds {int(timeout*1000)}; $n.Dispose();"
         )
+
+        # Encode to UTF-16LE base64 for use with -EncodedCommand to avoid quoting issues.
+        encoded = base64.b64encode(ps_script.encode('utf-16-le')).decode('ascii')
+
         if os.name == 'nt':
             try:
                 CREATE_NO_WINDOW = 0x08000000
                 si = subprocess.STARTUPINFO()
                 si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 si.wShowWindow = subprocess.SW_HIDE
-                subprocess.Popen(['powershell', '-NoProfile', '-Command', ps_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=si, creationflags=CREATE_NO_WINDOW)
+                # Use -EncodedCommand which is more robust across PowerShell versions
+                subprocess.Popen(['powershell', '-NoProfile', '-EncodedCommand', encoded], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, startupinfo=si, creationflags=CREATE_NO_WINDOW)
                 return True
             except Exception:
                 try:
-                    subprocess.Popen(['powershell', '-NoProfile', '-WindowStyle', 'Hidden', '-Command', ps_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.Popen(['powershell', '-NoProfile', '-EncodedCommand', encoded], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     return True
                 except Exception:
                     return False
         else:
-            subprocess.Popen(['powershell', '-NoProfile', '-WindowStyle', 'Hidden', '-Command', ps_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
+            try:
+                subprocess.Popen(['powershell', '-NoProfile', '-EncodedCommand', encoded], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return True
+            except Exception:
+                return False
     except Exception:
         return False
 
@@ -124,6 +137,37 @@ def notify_user(title: str, message: str, duration: int = 6):
     except Exception:
         pass
     mode = os.environ.get('APPDETECTOR_NOTIFY_MODE', 'auto').strip().lower()
+
+    # Try higher-level libraries first (plyer, win10toast) which provide a consistent
+    # experience across Windows versions. Fall back to PowerShell balloons and finally
+    # WSH popup and console print.
+    # 1) plyer
+    try:
+        if mode in ('auto', 'plyer'):
+            plyer = importlib.import_module('plyer.notification')
+            try:
+                plyer.notify(title=title, message=message, timeout=duration)
+                return
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # 2) win10toast (toasts on Win10/11) - works better on modern Windows
+    try:
+        if mode in ('auto', 'toast', 'win10toast'):
+            w10 = importlib.import_module('win10toast')
+            try:
+                toaster = w10.ToastNotifier()
+                # threaded=True so it doesn't block; fall back if not supported
+                toaster.show_toast(title, message, duration=duration, threaded=True)
+                return
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # 3) PowerShell balloon (best-effort, encoded to avoid quoting problems)
     try:
         if mode in ('auto', 'balloon'):
             ok = _ps_show_balloon(title, message, timeout=duration)
@@ -131,6 +175,8 @@ def notify_user(title: str, message: str, duration: int = 6):
                 return
     except Exception:
         pass
+
+    # 4) WSH popup as a final interactive fallback
     global _NOTIFY_FALLBACK_TRIED
     try:
         if not _NOTIFY_FALLBACK_TRIED or mode == 'popup':
@@ -139,6 +185,8 @@ def notify_user(title: str, message: str, duration: int = 6):
                 return
     except Exception:
         pass
+
+    # 5) Last resort: print to stdout/stderr so operator can still see the message in logs
     try:
         print(f"NOTIFY: {title} - {message}")
     except Exception:
@@ -220,7 +268,7 @@ def scan_drives_for_suspicious_files():
                        '.nupkg', '.nuspec', '.sha512', '.json', '.xml', '.svg', '.gz']
     skip_keywords = [
         'windows', 'windows portable', 'windowsapps', 'windows defender',
-        'windowsportabledevices', 'laragon','xampp', 'microsoft visual',
+        'windowsportabledevices', 'laragon','xampp', 'microsoft visual','git',
         'node_modules', 'bower_components', 'appdata\\local\\bower', 'bower\\cache\\packages',
         '\\._gradle_\\wrapper\\dists'.replace('_',''), '\\._gradle_\\'.replace('_',''),
         '\\cache\\packages\\', '\\gradle\\', '\\npm\\', '\\yarn\\',

@@ -1,0 +1,7 @@
+pyinstaller>=5.10
+psutil
+requests
+getmac
+watchdog
+plyer
+win10toast

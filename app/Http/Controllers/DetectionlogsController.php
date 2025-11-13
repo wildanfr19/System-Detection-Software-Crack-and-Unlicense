@@ -20,9 +20,18 @@ class DetectionlogsController extends Controller
         $totalDetected = DetectionLog::where('source', '!=', 'Clean PC')->count();
         $totalPCs = DetectionLog::where('source', '!=', 'Clean PC')
             ->distinct('pc_name')->count('pc_name');
-        $totalUsers = DetectionLog::where('source', '!=', 'Clean PC')
+
+            //    $totalUsers = DetectionLog::where('source', '!=', 'Clean PC')
+            // ->whereNotNull('user_name')
+            // ->distinct('user_name')->count('user_name');
+        // Count unique user+IP pairs. This treats the same user on different IPs as separate
+        // occurrences (useful when user_name may be reused across devices/networks).
+        // We use CONCAT with a separator for portability across DBs instead of COUNT(DISTINCT col1, col2).
+        $totalUsers = (int) DetectionLog::where('source', '!=', 'Clean PC')
             ->whereNotNull('user_name')
-            ->distinct('user_name')->count('user_name');
+            ->whereNotNull('ip_address')
+            ->select(DB::raw('COUNT(DISTINCT CONCAT(user_name, "||", ip_address)) as cnt'))
+            ->value('cnt');
         $totalApps = DetectionLog::where('source', '!=', 'Clean PC')
             ->whereNotNull('app_name')
             ->where('app_name', '<>', '')
