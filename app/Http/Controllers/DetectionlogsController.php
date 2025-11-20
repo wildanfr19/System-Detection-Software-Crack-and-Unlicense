@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LogExport;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+
 class DetectionlogsController extends Controller
 {
     /**
@@ -21,9 +22,9 @@ class DetectionlogsController extends Controller
         $totalPCs = DetectionLog::where('source', '!=', 'Clean PC')
             ->distinct('pc_name')->count('pc_name');
 
-            //    $totalUsers = DetectionLog::where('source', '!=', 'Clean PC')
-            // ->whereNotNull('user_name')
-            // ->distinct('user_name')->count('user_name');
+        //    $totalUsers = DetectionLog::where('source', '!=', 'Clean PC')
+        // ->whereNotNull('user_name')
+        // ->distinct('user_name')->count('user_name');
         // Count unique user+IP pairs. This treats the same user on different IPs as separate
         // occurrences (useful when user_name may be reused across devices/networks).
         // We use CONCAT with a separator for portability across DBs instead of COUNT(DISTINCT col1, col2).
@@ -36,6 +37,9 @@ class DetectionlogsController extends Controller
             ->whereNotNull('app_name')
             ->where('app_name', '<>', '')
             ->distinct('app_name')->count('app_name');
+
+        // Pass totals to view
+        dd($totalUsers);
 
         return view('logs.dashboard', compact('totalDetected', 'totalPCs', 'totalUsers', 'totalApps'));
     }
@@ -128,9 +132,9 @@ class DetectionlogsController extends Controller
     public function showDetail(Request $request, $params)
     {
         if ($request->ajax()) {
-            $data = DetectionLog::query()->where('pc_name', $params)->where('source','!=','Clean PC')->get();
+            $data = DetectionLog::query()->where('pc_name', $params)->where('source', '!=', 'Clean PC')->get();
             return DataTables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -156,7 +160,7 @@ class DetectionlogsController extends Controller
                     MAX(mac_address) as mac_address
                 ')
             ->groupBy('pc_name')
-            ->where('source','!=','Clean PC')
+            ->where('source', '!=', 'Clean PC')
             ->orderBy('latest_detected_at', 'desc')->get();
         return response()->json($logs);
     }
@@ -201,7 +205,7 @@ class DetectionlogsController extends Controller
             ->whereNotNull('pc_name')
             ->where('detected_at', '>=', $start)
             ->groupBy('pc_name')
-            ->where('source','!=','Clean PC')
+            ->where('source', '!=', 'Clean PC')
             ->orderByDesc('count');
 
         // Get limited rows for chart
@@ -210,11 +214,11 @@ class DetectionlogsController extends Controller
         // Also compute total distinct PCs in range (for UI info)
         $totalDistinct = DetectionLog::whereNotNull('pc_name')
             ->where('detected_at', '>=', $start)
-            ->where('source','!=','Clean PC')
+            ->where('source', '!=', 'Clean PC')
             ->distinct('pc_name')->count('pc_name');
 
         $labels = $rows->pluck('pc_name');
-        $data = $rows->pluck('count')->map(fn ($v) => (int) $v);
+        $data = $rows->pluck('count')->map(fn($v) => (int) $v);
 
         return response()->json([
             'labels' => $labels,
